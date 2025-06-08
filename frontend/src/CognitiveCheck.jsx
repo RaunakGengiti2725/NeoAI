@@ -14,6 +14,7 @@ export default function CognitiveCheck() {
     const res = await analyzeText({ text });
     const risk = await evaluateRisk({ text, transcript: voice.transcript });
     localStorage.setItem('latestAnalysis', res.analysis);
+
     localStorage.setItem('latestVoiceAnalysis', voice.analysis || '');
     localStorage.setItem('latestTranscript', voice.transcript);
     localStorage.setItem('latestRisk', JSON.stringify(risk));
