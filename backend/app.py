@@ -14,6 +14,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def index():
+    return "✅ NeuroBridge backend is running!"
+
 SYSTEM_PROMPT_TEXT = (
     "You are a clinical AI assistant that checks for disorganized thinking, "
     "word confusion, or cognitive instability in user responses. Flag any "
