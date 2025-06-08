@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { analyzeText } from './api.js';
+import VoiceRecorder from './VoiceRecorder.jsx';
+import { analyzeText, evaluateRisk } from './api.js';
 import { useNavigate } from 'react-router-dom';
 
 export default function CognitiveCheck() {
   const [text, setText] = useState('');
+  const [voice, setVoice] = useState({ transcript: '', analysis: '' });
   const navigate = useNavigate();
 
   const handleSubmit = async e => {
     e.preventDefault();
     const res = await analyzeText({ text });
+    const risk = await evaluateRisk({ text, transcript: voice.transcript });
     localStorage.setItem('latestAnalysis', res.analysis);
+    localStorage.setItem('latestTranscript', voice.transcript);
+    localStorage.setItem('latestRisk', JSON.stringify(risk));
+    const history = JSON.parse(localStorage.getItem('riskHistory') || '[]');
+    history.push({ date: new Date().toISOString(), risk: risk.risk_level });
+    localStorage.setItem('riskHistory', JSON.stringify(history));
     navigate('/report');
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
+      <VoiceRecorder onResult={setVoice} />
       <label className="block">
         <span className="text-gray-700">How are you feeling today?</span>
         <textarea
