@@ -3,6 +3,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import openai
+import base64
+import io
+import json
+
+from typing import Optional
 
 load_dotenv()
 
@@ -21,15 +26,59 @@ SYSTEM_PROMPT_TEXT = (
 @app.post("/analyze-voice")
 def analyze_voice():
     data = request.get_json()
-    transcript = data.get("transcript", "")
-    if not transcript:
-        return jsonify({"error": "No transcript provided"}), 400
+    audio_b64 = data.get("audio")
+    if not audio_b64:
+        return jsonify({"error": "No audio provided"}), 400
+
+    try:
+        audio_bytes = base64.b64decode(audio_b64)
+    except Exception:
+        return jsonify({"error": "Invalid audio"}), 400
+
+    audio_file = io.BytesIO(audio_bytes)
+    audio_file.name = "audio.webm"
+
+    transcription = openai.audio.transcriptions.create(
+        model="whisper-1", file=audio_file
+    )
+    transcript = transcription.text
 
     response = openai.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT_TEXT},
             {"role": "user", "content": transcript},
+        ],
+    )
+    analysis = response.choices[0].message.content
+    return jsonify({"analysis": analysis, "transcript": transcript})
+
+
+@app.post("/analyze-face")
+def analyze_face():
+    data = request.get_json()
+    img_b64: Optional[str] = data.get("image")
+    if not img_b64:
+        return jsonify({"error": "No image provided"}), 400
+
+    system_prompt = (
+        "You examine a patient's facial expression and point out any signs of "
+        "drooping, asymmetry, or expressions indicating confusion or distress."
+    )
+
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+                    }
+                ],
+            },
         ],
     )
     analysis = response.choices[0].message.content
@@ -59,7 +108,11 @@ def evaluate_risk():
     data = request.get_json()
     text = data.get("text", "")
     transcript = data.get("transcript", "")
-    combined = f"Voice transcript: {transcript}\nText response: {text}"
+    face = data.get("face_analysis", "")
+    combined = (
+        f"Voice transcript: {transcript}\nText response: {text}\n"
+        f"Face analysis: {face}"
+    )
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -77,7 +130,11 @@ def evaluate_risk():
         response_format={"type": "json_object"},
     )
     content = response.choices[0].message.content
-    return jsonify(content)
+    try:
+        parsed = json.loads(content)
+    except Exception:
+        parsed = {"error": "Malformed response", "raw": content}
+    return jsonify(parsed)
 
 
 if __name__ == "__main__":
