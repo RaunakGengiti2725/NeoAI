@@ -1,12 +1,7 @@
 import React from 'react';
 
 export default function HistoryGraph() {
-  // Mocked data for demonstration
-  const data = [
-    { date: 'Day 1', risk: 10 },
-    { date: 'Day 2', risk: 20 },
-    { date: 'Day 3', risk: 15 },
-  ];
+  const data = JSON.parse(localStorage.getItem('riskHistory') || '[]');
 
   return (
     <div className="p-4 bg-white rounded shadow max-w-xl mx-auto">
@@ -14,8 +9,8 @@ export default function HistoryGraph() {
       <ul className="space-y-1">
         {data.map(d => (
           <li key={d.date} className="flex justify-between">
-            <span>{d.date}</span>
-            <span>{d.risk}</span>
+            <span>{new Date(d.date).toLocaleDateString()}</span>
+            <span className="capitalize">{d.risk || 'unknown'}</span>
           </li>
         ))}
       </ul>

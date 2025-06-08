@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { sendVoice } from './api.js';
 
-export default function VoiceRecorder() {
+export default function VoiceRecorder({ onResult }) {
   const [recording, setRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const mediaRecorder = useRef(null);
@@ -18,7 +18,8 @@ export default function VoiceRecorder() {
       reader.onloadend = async () => {
         const base64 = reader.result.split(',')[1];
         const res = await sendVoice({ audio: base64 });
-        setTranscript(res.analysis || '');
+        setTranscript(res.transcript || '');
+        if (onResult) onResult(res);
       };
       reader.readAsDataURL(blob);
       chunks.current = [];
@@ -33,11 +34,11 @@ export default function VoiceRecorder() {
   };
 
   return (
-    <div className="p-4 bg-white rounded shadow">
+    <div className="p-4 bg-white rounded shadow flex flex-col items-start">
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={recording ? stopRecording : startRecording}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+        className="px-6 py-2 bg-blue-600 text-white rounded"
       >
         {recording ? 'Stop' : 'Record'}
       </motion.button>

@@ -3,6 +3,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import openai
+import base64
+import io
+import json
 
 load_dotenv()
 
@@ -21,9 +24,22 @@ SYSTEM_PROMPT_TEXT = (
 @app.post("/analyze-voice")
 def analyze_voice():
     data = request.get_json()
-    transcript = data.get("transcript", "")
-    if not transcript:
-        return jsonify({"error": "No transcript provided"}), 400
+    audio_b64 = data.get("audio")
+    if not audio_b64:
+        return jsonify({"error": "No audio provided"}), 400
+
+    try:
+        audio_bytes = base64.b64decode(audio_b64)
+    except Exception:
+        return jsonify({"error": "Invalid audio"}), 400
+
+    audio_file = io.BytesIO(audio_bytes)
+    audio_file.name = "audio.webm"
+
+    transcription = openai.audio.transcriptions.create(
+        model="whisper-1", file=audio_file
+    )
+    transcript = transcription.text
 
     response = openai.chat.completions.create(
         model="gpt-4o",
@@ -33,7 +49,7 @@ def analyze_voice():
         ],
     )
     analysis = response.choices[0].message.content
-    return jsonify({"analysis": analysis})
+    return jsonify({"analysis": analysis, "transcript": transcript})
 
 
 @app.post("/analyze-text")
@@ -77,7 +93,11 @@ def evaluate_risk():
         response_format={"type": "json_object"},
     )
     content = response.choices[0].message.content
-    return jsonify(content)
+    try:
+        parsed = json.loads(content)
+    except Exception:
+        parsed = {"error": "Malformed response", "raw": content}
+    return jsonify(parsed)
 
 
 if __name__ == "__main__":
