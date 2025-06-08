@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 
 export default function RiskReport() {
   const analysis = localStorage.getItem('latestAnalysis') || 'No data.';
+
+  const voiceAnalysis = localStorage.getItem('latestVoiceAnalysis') || '';
+
   const transcript = localStorage.getItem('latestTranscript') || '';
   const risk = JSON.parse(localStorage.getItem('latestRisk') || '{}');
   return (
@@ -11,6 +14,14 @@ export default function RiskReport() {
         <h2 className="text-xl font-semibold mb-1">Voice Transcript</h2>
         <p className="whitespace-pre-line">{transcript}</p>
       </div>
+
+      {voiceAnalysis && (
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Voice Analysis</h2>
+          <p className="whitespace-pre-line">{voiceAnalysis}</p>
+        </div>
+      )}
+
       <div>
         <h2 className="text-xl font-semibold mb-1">Text Analysis</h2>
         <p className="whitespace-pre-line">{analysis}</p>
