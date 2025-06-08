@@ -5,8 +5,9 @@ export default function RiskReport() {
   const analysis = localStorage.getItem('latestAnalysis') || 'No data.';
 
   const voiceAnalysis = localStorage.getItem('latestVoiceAnalysis') || '';
-
   const transcript = localStorage.getItem('latestTranscript') || '';
+  const faceAnalysis = localStorage.getItem('latestFaceAnalysis') || '';
+
   const risk = JSON.parse(localStorage.getItem('latestRisk') || '{}');
   return (
     <div className="p-4 bg-white rounded shadow max-w-xl mx-auto space-y-4">
@@ -19,6 +20,13 @@ export default function RiskReport() {
         <div>
           <h2 className="text-xl font-semibold mb-1">Voice Analysis</h2>
           <p className="whitespace-pre-line">{voiceAnalysis}</p>
+        </div>
+      )}
+
+      {faceAnalysis && (
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Face Analysis</h2>
+          <p className="whitespace-pre-line">{faceAnalysis}</p>
         </div>
       )}
 
