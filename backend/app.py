@@ -7,7 +7,9 @@ import base64
 import io
 import json
 
+
 from typing import Optional
+
 
 load_dotenv()
 
@@ -22,6 +24,10 @@ CORS(
     resources={r"/*": {"origins": "*"}},
     allow_headers=["Content-Type"],
 )
+
+@app.route("/")
+def index():
+    return "✅ NeuroBridge backend is running!"
 
 SYSTEM_PROMPT_TEXT = (
     "You are a clinical AI assistant that checks for disorganized thinking, "
@@ -61,6 +67,7 @@ def analyze_voice():
     return jsonify({"analysis": analysis, "transcript": transcript})
 
 
+
 @app.post("/analyze-face")
 def analyze_face():
     data = request.get_json()
@@ -90,6 +97,7 @@ def analyze_face():
     )
     analysis = response.choices[0].message.content
     return jsonify({"analysis": analysis})
+
 
 
 @app.post("/analyze-text")
