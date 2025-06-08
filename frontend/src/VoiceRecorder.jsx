@@ -26,7 +26,9 @@ export default function VoiceRecorder({ onResult }) {
         const base64 = reader.result.split(',')[1];
         const res = await sendVoice({ audio: base64 });
         setTranscript(res.transcript || '');
+
         setAnalysis(res.analysis || '');
+
         if (onResult) onResult(res);
       };
       reader.readAsDataURL(blob);
