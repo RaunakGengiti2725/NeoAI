@@ -26,6 +26,15 @@ npm run dev
 
 Set `VITE_API_URL` to the backend URL if you serve them separately.
 
+During local development the frontend runs on port `5173` and the backend on
+`5000`, so you would typically start the frontend with:
+
+```bash
+VITE_API_URL=http://localhost:5000 npm run dev
+```
+
+The backend includes permissive CORS headers so the dev server can communicate
+with it.
 
 The frontend accesses the webcam and microphone during a check-in to
 capture voice and facial expressions. Grant permissions when prompted.

@@ -16,7 +16,14 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
-CORS(app)
+# Allow all origins so the Vite dev server can reach the API during
+# development. Explicitly list the default headers to satisfy the CORS
+# preflight checks triggered by `fetch` with JSON payloads.
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    allow_headers=["Content-Type"],
+)
 
 @app.route("/")
 def index():
